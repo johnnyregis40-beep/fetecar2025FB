@@ -5,20 +5,41 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Análise Califórnia</title>
 <style>
+  * {
+    box-sizing: border-box;
+  }
+
   body {
-    background-color: #0d1117;
-    color: #c9d1d9;
+    margin: 0;
+    height: 100vh;
     font-family: 'Consolas', monospace;
-    padding: 40px;
+    color: #c9d1d9;
+    background: url("fundo.png") no-repeat center center fixed;
+    background-size: cover;
+    overflow: hidden;
+  }
+
+  /* Camada escura com blur + parallax */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.55);
+    backdrop-filter: blur(8px);
+    transition: transform 0.2s ease-out;
+    z-index: 0;
   }
 
   .terminal {
-    background-color: #161b22;
+    position: relative;
+    z-index: 1;
+    background-color: rgba(22, 27, 34, 0.92);
     border-radius: 10px;
-    padding: 20px;
+    padding: 25px;
     max-width: 600px;
-    margin: auto;
-    box-shadow: 0 0 10px rgba(88, 166, 255, 0.2);
+    margin: 80px auto;
+    box-shadow: 0 0 25px rgba(88, 166, 255, 0.3);
+    animation: fadeIn 1s ease forwards;
   }
 
   .texto {
@@ -26,6 +47,8 @@
     margin-bottom: 15px;
     font-size: 18px;
     white-space: pre-line;
+    opacity: 0;
+    animation: aparecerTexto 1s forwards;
   }
 
   select, input, button {
@@ -37,6 +60,7 @@
     width: 100%;
     margin-top: 10px;
     font-size: 16px;
+    transition: all 0.2s ease-in-out;
   }
 
   select option {
@@ -48,6 +72,7 @@
     background-color: #58a6ff;
     color: #0d1117;
     cursor: pointer;
+    transform: scale(1.03);
   }
 
   .barra-container {
@@ -81,21 +106,32 @@
   .hidden {
     display: none;
   }
+
+  /* Animações */
+  @keyframes aparecerTexto {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.98); }
+    to { opacity: 1; transform: scale(1); }
+  }
 </style>
 </head>
 <body>
   <div class="terminal">
-    <div class="texto" id="texto">Olá! Bem-vindo à Análise Social da Califórnia.<br><br>Qual é o seu nome?</div>
+    <div class="texto" id="texto"> Bem-vindo à Análise Social da Califórnia.<br><br>Qual é o seu nome?</div>
     <input type="text" id="nomeInput" placeholder="Digite seu nome aqui...">
     <button id="nomeBtn" onclick="perguntaEtnia()">Continuar</button>
 
     <div id="etniaDiv" class="hidden">
       <div class="texto">1️⃣ Escolha sua etnia:</div>
       <select id="etnia">
-        <option value="34.7">1 - Branco </option>
-        <option value="5.4">2 - Negro / Afro-americano </option>
-        <option value="15.1">3 - Asiático </option>
-        <option value="0.8">4 - Indígena / Nativo </option>
+        <option value="34.7">1 - Branco (34.7%)</option>
+        <option value="5.4">2 - Negro / Afro-americano (5.4%)</option>
+        <option value="15.1">3 - Asiático (15.1%)</option>
+        <option value="0.8">4 - Indígena / Nativo (0.8%)</option>
       </select>
       <button onclick="perguntaCidade()">Próximo</button>
     </div>
@@ -103,17 +139,14 @@
     <div id="cidadeDiv" class="hidden">
       <div class="texto">2️⃣ Escolha sua cidade:</div>
       <select id="cidade">
-        <!-- Cidades pobres = porcentagens menores -->
-        <option value="35">1 - Mendota </option>
-        <option value="30">2 - East Bakersfield </option>
-        <option value="25">3 - Isla Vista </option>
-        <option value="40">4 - Parlier </option>
-        <!-- Classe média -->
-        <option value="70">5 - Fremont </option>
-        <option value="75">6 - San Ramon </option>
-        <!-- Ricas -->
-        <option value="90">7 - Atherton </option>
-        <option value="88">8 - Los Altos Hills </option>
+        <option value="35">1 - Mendota (pobreza 37,45%)</option>
+        <option value="30">2 - East Bakersfield (pobreza 44,77%)</option>
+        <option value="25">3 - Isla Vista (pobreza 71,49%)</option>
+        <option value="40">4 - Parlier (pobreza 30,18%)</option>
+        <option value="70">5 - Fremont (classe média)</option>
+        <option value="75">6 - San Ramon (classe média-alta)</option>
+        <option value="90">7 - Atherton (muito rica)</option>
+        <option value="88">8 - Los Altos Hills (muito rica)</option>
       </select>
       <button onclick="perguntaEducacao()">Próximo</button>
     </div>
@@ -142,6 +175,13 @@
   </div>
 
   <script>
+    // Parallax dinâmico com movimento do mouse
+    document.addEventListener("mousemove", (e) => {
+      const moveX = (e.clientX / window.innerWidth - 0.5) * 10;
+      const moveY = (e.clientY / window.innerHeight - 0.5) * 10;
+      document.body.style.backgroundPosition = `${50 + moveX}% ${50 + moveY}%`;
+    });
+
     function perguntaEtnia() {
       const nome = document.getElementById("nomeInput").value.trim();
       if (nome === "") {
@@ -179,7 +219,6 @@
       const educacao = parseFloat(document.getElementById("educacao").value);
 
       setTimeout(() => {
-        // Cálculos equilibrados
         const chanceSobreviver = Math.min(
           100,
           ((cidade * 0.5) + (educacao * 0.4) + (etnia * 0.1)).toFixed(1)
